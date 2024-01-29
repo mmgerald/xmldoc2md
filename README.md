@@ -1,6 +1,6 @@
 # XMLDoc2Markdown
 
-Tool to generate markdown from C# XML documentation.
+Tool to generate markdown from C# XML documentation. This is the improved version of [XMLDoc2Markdown](https://github.com/charlesdevandiere/xmldoc2md) to work with .NET 8.
 
 [![Build Status](https://dev.azure.com/charlesdevandiere/charlesdevandiere/_apis/build/status/charlesdevandiere.xmldoc2md?branchName=master)](https://dev.azure.com/charlesdevandiere/charlesdevandiere/_build/latest?definitionId=2&branchName=master)
 
