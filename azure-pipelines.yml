@@ -16,10 +16,12 @@ trigger:
       - README.md
 
 steps:
-  - task: UseGitVersion@5
-    displayName: GitVersion
+  - task: gitversion/setup@0
+    displayName: Install GitVersion
     inputs:
       versionSpec: '5.x'
+  - task: gitversion/execute@0
+    displayName: Determine Version      
 
   - script: dotnet pack ./src/XMLDoc2Markdown/XMLDoc2Markdown.csproj -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)/out -p:Version=$(GitVersion.SemVer)
     displayName: 'dotnet pack'
