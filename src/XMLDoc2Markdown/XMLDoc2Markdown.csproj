@@ -5,22 +5,22 @@
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Version>0.0.0</Version>
-    <ToolCommandName>xmldoc2md</ToolCommandName>
+    <ToolCommandName>mmxmldoc2md</ToolCommandName>
     <PackAsTool>true</PackAsTool>
     <IsPackable>true</IsPackable>
     
-    <Authors>Charles de Vandière</Authors>
-    <Copyright>© 2024 Charles de Vandière</Copyright>
-    <Product>XMLDoc2Markdown</Product>
-    <Title>XMLDoc2Markdown</Title>
+    <Authors>Charles de Vandière, meshmakers GmbH and Contributors</Authors>
+    <Copyright>© 2024 Charles de Vandière, meshmakers GmbH and Contributors</Copyright>
+    <Product>MMXMLDoc2Markdown</Product>
+    <Title>MMXMLDoc2Markdown</Title>
     <Description>Tool to generate markdown from C# XML documentation.</Description>
     <Summary>Tool to generate markdown from C# XML documentation.</Summary>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://charlesdevandiere.github.io/xmldoc2md</PackageProjectUrl>
+    <PackageProjectUrl>https://mmgerald.github.io/xmldoc2md</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>Markdown;XMLDocumentation</PackageTags>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/charlesdevandiere/xmldoc2md</RepositoryUrl>
+    <RepositoryUrl>https://github.com/mmgerald/xmldoc2md</RepositoryUrl>
     
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
