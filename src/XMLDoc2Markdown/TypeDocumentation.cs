@@ -139,7 +139,7 @@ public class TypeDocumentation
 
         if (lines.Any())
         {
-            this.document.AppendParagraph(string.Join($"<br>{Environment.NewLine}", lines));
+            this.document.AppendParagraph(string.Join($"<br/>{Environment.NewLine}", lines));
         }
     }
 
@@ -201,7 +201,7 @@ public class TypeDocumentation
             "see" => this.GetLinkFromReference(element.Attribute("cref")?.Value ?? element.Attribute("href")?.Value, element.Value),
             "seealso" => this.GetLinkFromReference(element.Attribute("cref")?.Value, element.Value),
             "c" => new MarkdownInlineCode(element.Value),
-            "br" => new MarkdownText("<br>"),
+            "br" => new MarkdownText("<br/>"),
             "para" => this.XNodesToMarkdownParagraph(element.Nodes()),
             "example" => this.XNodesToMarkdownParagraph(element.Nodes()),
             "code" => new MarkdownCode("csharp", TypeDocumentation.FormatCodeElementValue(element.Value)),
@@ -379,7 +379,7 @@ public class TypeDocumentation
                 IEnumerable<XNode> nodes = memberDocElement?.Element("value")?.Nodes();
                 MarkdownParagraph valueDoc = this.XNodesToMarkdownParagraph(nodes);
 
-                this.document.AppendParagraph($"{typeName}<br>{Environment.NewLine}{valueDoc}");
+                this.document.AppendParagraph($"{typeName}<br/>{Environment.NewLine}{valueDoc}");
             }
 
             this.WriteExceptions(memberDocElement);
@@ -417,7 +417,7 @@ public class TypeDocumentation
             MarkdownInlineElement exceptionTypeName = this.GetLinkFromReference(cref);
             MarkdownParagraph exceptionSummary = this.XNodesToMarkdownParagraph(exceptionDoc.Nodes());
 
-            this.document.AppendParagraph(string.Join($"<br>{Environment.NewLine}", exceptionTypeName, exceptionSummary));
+            this.document.AppendParagraph(string.Join($"<br/>{Environment.NewLine}", exceptionTypeName, exceptionSummary));
         }
     }
 
@@ -434,7 +434,7 @@ public class TypeDocumentation
         IEnumerable<XNode> nodes = memberDocElement?.Element("returns")?.Nodes();
         MarkdownParagraph typeParamDoc = this.XNodesToMarkdownParagraph(nodes);
 
-        this.document.AppendParagraph($"{typeName}<br>{Environment.NewLine}{typeParamDoc}");
+        this.document.AppendParagraph($"{typeName}<br/>{Environment.NewLine}{typeParamDoc}");
     }
 
     private void WriteTypeParameters(MemberInfo memberInfo, XElement memberDocElement)
@@ -464,7 +464,7 @@ public class TypeDocumentation
             IEnumerable<XNode> nodes = memberDocElement?.Elements("typeparam").FirstOrDefault(e => e.Attribute("name")?.Value == typeParam.Name)?.Nodes();
             MarkdownParagraph typeParamDoc = this.XNodesToMarkdownParagraph(nodes);
 
-            this.document.AppendParagraph(string.Join($"<br>{Environment.NewLine}", new MarkdownInlineCode(typeName), typeParamDoc));
+            this.document.AppendParagraph(string.Join($"<br/>{Environment.NewLine}", new MarkdownInlineCode(typeName), typeParamDoc));
         }
     }
 
@@ -490,7 +490,7 @@ public class TypeDocumentation
             IEnumerable<XNode> nodes = memberDocElement?.Elements("param").FirstOrDefault(e => e.Attribute("name")?.Value == param.Name)?.Nodes();
             MarkdownParagraph paramDoc = this.XNodesToMarkdownParagraph(nodes);
 
-            this.document.AppendParagraph($"{new MarkdownInlineCode(param.Name)} {typeName}<br>{Environment.NewLine}{paramDoc}");
+            this.document.AppendParagraph($"{new MarkdownInlineCode(param.Name)} {typeName}<br/>{Environment.NewLine}{paramDoc}");
         }
     }
 
