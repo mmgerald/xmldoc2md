@@ -15,19 +15,23 @@ internal static class MemberInfoExtensions
         {
             return type.GetSignature(full);
         }
-        else if (memberInfo is MethodBase methodBase)
+
+        if (memberInfo is MethodBase methodBase)
         {
             return methodBase.GetSignature(full);
         }
-        else if (memberInfo is PropertyInfo propertyInfo)
+
+        if (memberInfo is PropertyInfo propertyInfo)
         {
             return propertyInfo.GetSignature(full);
         }
-        else if (memberInfo is EventInfo eventInfo)
+
+        if (memberInfo is EventInfo eventInfo)
         {
             return eventInfo.GetSignature(full);
         }
-        else if (memberInfo is FieldInfo fieldInfo)
+
+        if (memberInfo is FieldInfo fieldInfo)
         {
             return fieldInfo.GetSignature(full);
         }
@@ -158,7 +162,8 @@ internal static class MemberInfoExtensions
                 {
                     return new MarkdownLink(text, memberInfo.GetMSDocsUrl());
                 }
-                else if (declaringType.Assembly == assembly)
+
+                if (declaringType.Assembly == assembly)
                 {
                     return new MarkdownLink(text, memberInfo.GetInternalDocsUrl(noExtension, noPrefix));
                 }
@@ -182,7 +187,8 @@ internal static class MemberInfoExtensions
                 ? "``" + methodIndex
                 : "`" + typeGenericMap[type.Name];
         }
-        else if (type.HasElementType)
+
+        if (type.HasElementType)
         {
             string elementTypeString = GetFormatedTypeName(
                 type.GetElementType(),
@@ -209,28 +215,26 @@ internal static class MemberInfoExtensions
                     throw new Exception($"{nameof(GetFormatedTypeName)} encountered an unhandled element type: {type}");
             }
         }
-        else
+
+        string name = type.IsNested
+            ? GetFormatedTypeName(
+                type.DeclaringType,
+                isMethodParameter,
+                typeGenericMap,
+                methodGenericMap) + "."
+            : type.Namespace + ".";
+
+        name += isMethodParameter
+            ? Regex.Replace(type.Name, @"`\d+", string.Empty)
+            : type.Name;
+
+        if (type.IsGenericType && isMethodParameter)
         {
-            string name = type.IsNested
-                ? GetFormatedTypeName(
-                    type.DeclaringType,
-                    isMethodParameter,
-                    typeGenericMap,
-                    methodGenericMap) + "."
-                : type.Namespace + ".";
-
-            name += isMethodParameter
-                ? Regex.Replace(type.Name, @"`\d+", string.Empty)
-                : type.Name;
-
-            if (type.IsGenericType && isMethodParameter)
-            {
-                IEnumerable<string> genericArgs = type.GetGenericArguments()
-                            .Select(argument => GetFormatedTypeName(argument, isMethodParameter, typeGenericMap, methodGenericMap));
-                name += $"{{{string.Join(",", genericArgs)}}}";
-            }
-
-            return name;
+            IEnumerable<string> genericArgs = type.GetGenericArguments()
+                .Select(argument => GetFormatedTypeName(argument, isMethodParameter, typeGenericMap, methodGenericMap));
+            name += $"{{{string.Join(",", genericArgs)}}}";
         }
+
+        return name;
     }
 }

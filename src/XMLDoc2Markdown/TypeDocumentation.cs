@@ -348,7 +348,7 @@ public class TypeDocumentation
 
         foreach (MemberInfo member in members)
         {
-            this.document.AppendHeader(new MarkdownStrongEmphasis(member.GetSignature().FormatChevrons()), 3);
+            this.document.AppendHeader(new MarkdownStrongEmphasis(member.GetSignature(true).FormatChevrons()), 3);
 
             XElement memberDocElement = this.documentation.GetMember(member);
 

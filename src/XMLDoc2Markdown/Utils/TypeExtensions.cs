@@ -114,6 +114,10 @@ internal static class TypeExtensions
     internal static string GetDisplayName(this Type type, bool simplifyName = false)
     {
         string name = simplifyName ? type.GetSimplifiedName() : type.Name;
+        if (type.IsByRef)
+        {
+            name = name.Substring(0, name.Length - 1);
+        }
 
         TypeInfo typeInfo = type.GetTypeInfo();
         Type[] genericParams = typeInfo.GenericTypeArguments.Length > 0 ? typeInfo.GenericTypeArguments : typeInfo.GenericTypeParameters;

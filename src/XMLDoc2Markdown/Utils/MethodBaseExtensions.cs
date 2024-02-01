@@ -42,7 +42,7 @@ internal static class MethodBaseExtensions
 
         if (full)
         {
-            if (methodBase.DeclaringType.IsClass)
+            if (methodBase.DeclaringType.IsClass || methodBase.DeclaringType.IsValueType)
             {
                 signature.Add(methodBase.GetVisibility().Print());
 
@@ -79,7 +79,7 @@ internal static class MethodBaseExtensions
         }
         ParameterInfo[] @params = methodBase.GetParameters();
         IEnumerable<string> paramsNames = @params
-            .Select(p => $"{p.ParameterType.GetDisplayName(simplifyName: full)}{(full ? $" {p.Name}" : null)}");
+            .Select(p => $"{(p.ParameterType.IsByRef ? "out ": "")}{p.ParameterType.GetDisplayName(simplifyName: full)}{(full ? $" {p.Name}" : null)}");
         displayName += $"({string.Join(", ", paramsNames)})";
         signature.Add(displayName);
 
