@@ -4,7 +4,7 @@ internal static class StringExtensions
 {
     internal static string FormatChevrons(this string value)
     {
-        return value;
+        return value.Replace("<", "{").Replace(">", "}");
     }
 
     internal static string ToAnchorLink(this string value)
