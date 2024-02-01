@@ -40,7 +40,8 @@ internal static class MemberInfoExtensions
         switch (memberInfo)
         {
             case Type type:
-                return Regex.Replace(type.FullName, @"\[.*\]", string.Empty).Replace('+', '.');
+                string t  = type.Namespace + "." + type.Name;
+                return Regex.Replace(t, @"\[.*\]", string.Empty).Replace('+', '.');
 
             case PropertyInfo _:
             case FieldInfo _:
