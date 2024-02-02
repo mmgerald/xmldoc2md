@@ -173,7 +173,7 @@ internal static class TypeExtensions
         return $"{msdocsBaseUrl}/{type.GetDocsFileName()}";
     }
 
-    internal static string GetInternalDocsUrl(this Type type, Type currentType,
+    internal static string GetInternalDocsUrl(this Type type, string currentNamespace,
         bool noExtension = false, bool noPrefix = false)
     {
         if (type == null)
@@ -182,7 +182,7 @@ internal static class TypeExtensions
         }
         
         var referenceTypeFolder = type.Assembly.GetFolderName(type.Namespace);
-        var currentTypeFolder = type.Assembly.GetFolderName(currentType.Namespace);
+        var currentTypeFolder = type.Assembly.GetFolderName(currentNamespace);
         string ret = "";
         if (referenceTypeFolder != currentTypeFolder)
         {
@@ -192,7 +192,7 @@ internal static class TypeExtensions
                 ret += "../";
             }
 
-            ret += referenceTypeFolder;
+            ret += referenceTypeFolder + "/";
         }
 
         string url = $"{ret}{type.GetDocsFileName()}";
@@ -221,7 +221,8 @@ internal static class TypeExtensions
 
     internal static MarkdownInlineElement GetDocsLink(
         this Type type,
-        Type currentType,
+        Assembly assembly,
+        string currentNamespace,
         string text = null,
         bool noExtension = false,
         bool noPrefix = false)
@@ -243,9 +244,9 @@ internal static class TypeExtensions
                 return new MarkdownLink(text, type.GetMSDocsUrl());
             }
 
-            if (type.Assembly == currentType.Assembly)
+            if (type.Assembly == assembly)
             {
-                return new MarkdownLink(text, type.GetInternalDocsUrl(currentType, noExtension, noPrefix));
+                return new MarkdownLink(text, type.GetInternalDocsUrl(currentNamespace, noExtension, noPrefix));
             }
         }
 

@@ -113,13 +113,28 @@ internal static class MemberInfoExtensions
         return $"{msdocsBaseUrl}/{type.GetDocsFileName()}.{memberInfo.Name.ToLower()}";
     }
 
-    internal static string GetInternalDocsUrl(this MemberInfo memberInfo, bool noExtension = false, bool noPrefix = false)
+    internal static string GetInternalDocsUrl(this MemberInfo memberInfo, string currentNamespace, bool noExtension = false, bool noPrefix = false)
     {
         RequiredArgument.NotNull(memberInfo, nameof(memberInfo));
 
         Type type = memberInfo.DeclaringType ?? throw new Exception($"Event {memberInfo.Name} has no declaring type.");
 
-        string url = $"{type.GetDocsFileName()}";
+        
+        var referenceTypeFolder = type.Assembly.GetFolderName(type.Namespace);
+        var currentTypeFolder = type.Assembly.GetFolderName(currentNamespace);
+        string ret = "";
+        if (referenceTypeFolder != currentTypeFolder)
+        {
+            var y = currentTypeFolder?.Split("/").Length ?? 0;
+            for (int i = 0; i < y; i++)
+            {
+                ret += "../";
+            }
+
+            ret += referenceTypeFolder + "/";
+        }
+
+        string url = $"{ret}{type.GetDocsFileName()}";
 
         if (!noExtension)
         {
@@ -136,19 +151,19 @@ internal static class MemberInfoExtensions
         return $"{url}#{anchor}";
     }
 
-    internal static MarkdownInlineElement GetDocsLink(this MemberInfo memberInfo, Type currentType, string text = null, bool noExtension = false, bool noPrefix = false)
+    internal static MarkdownInlineElement GetDocsLink(this MemberInfo memberInfo, Assembly assembly, string currentNamespace, string text = null, bool noExtension = false, bool noPrefix = false)
     {
         RequiredArgument.NotNull(memberInfo, nameof(memberInfo));
-        RequiredArgument.NotNull(currentType, nameof(currentType));
+        RequiredArgument.NotNull(currentNamespace, nameof(currentNamespace));
 
         return memberInfo switch
         {
-            Type type => type.GetDocsLink(currentType, text, noExtension, noPrefix),
-            MethodBase method => method.GetDocsLink(currentType, text, noExtension, noPrefix),
-            _ => getDocsLinkBase(memberInfo, currentType, text, noExtension, noPrefix),
+            Type type => type.GetDocsLink(assembly, currentNamespace, text, noExtension, noPrefix),
+            MethodBase method => method.GetDocsLink(assembly, currentNamespace, text, noExtension, noPrefix),
+            _ => getDocsLinkBase(memberInfo, assembly, currentNamespace, text, noExtension, noPrefix),
         };
 
-        static MarkdownInlineElement getDocsLinkBase(MemberInfo memberInfo, Type currentType, string text = null, bool noExtension = false, bool noPrefix = false)
+        static MarkdownInlineElement getDocsLinkBase(MemberInfo memberInfo, Assembly assembly, string currentNamespace, string text = null, bool noExtension = false, bool noPrefix = false)
         {
             Type declaringType = memberInfo.DeclaringType;
 
@@ -164,9 +179,9 @@ internal static class MemberInfoExtensions
                     return new MarkdownLink(text, memberInfo.GetMSDocsUrl());
                 }
 
-                if (declaringType.Assembly == currentType.Assembly)
+                if (declaringType.Assembly == assembly)
                 {
-                    return new MarkdownLink(text, memberInfo.GetInternalDocsUrl(noExtension, noPrefix));
+                    return new MarkdownLink(text, memberInfo.GetInternalDocsUrl(currentNamespace, noExtension, noPrefix));
                 }
 
                 return new MarkdownText(text);

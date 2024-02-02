@@ -100,13 +100,27 @@ internal static class MethodBaseExtensions
         return $"{msdocsBaseUrl}/{type.GetDocsFileName()}.{methodInfo.Name.ToLower().Replace('`', '-')}";
     }
 
-    internal static string GetInternalDocsUrl(this MethodBase methodInfo, bool noExtension = false, bool noPrefix = false)
+    internal static string GetInternalDocsUrl(this MethodBase methodInfo, string currentNamespace, bool noExtension = false, bool noPrefix = false)
     {
         RequiredArgument.NotNull(methodInfo, nameof(methodInfo));
 
         Type type = methodInfo.DeclaringType ?? throw new Exception($"Method {methodInfo.Name} has no declaring type.");
 
-        string url = $"{type.GetDocsFileName()}";
+        var referenceTypeFolder = type.Assembly.GetFolderName(type.Namespace);
+        var currentTypeFolder = type.Assembly.GetFolderName(currentNamespace);
+        string ret = "";
+        if (referenceTypeFolder != currentTypeFolder)
+        {
+            var y = currentTypeFolder?.Split("/").Length ?? 0;
+            for (int i = 0; i < y; i++)
+            {
+                ret += "../";
+            }
+
+            ret += referenceTypeFolder + "/";
+        }
+
+        string url = $"{ret}{type.GetDocsFileName()}";
 
         if (!noExtension)
         {
@@ -123,10 +137,11 @@ internal static class MethodBaseExtensions
         return $"{url}#{anchor}";
     }
 
-    internal static MarkdownInlineElement GetDocsLink(this MethodBase methodInfo, Type currentType, string text = null, bool noExtension = false, bool noPrefix = false)
+    internal static MarkdownInlineElement GetDocsLink(this MethodBase methodInfo, Assembly assembly, string currentNamespace, string text = null, bool noExtension = false, bool noPrefix = false)
     {
         RequiredArgument.NotNull(methodInfo, nameof(methodInfo));
-        RequiredArgument.NotNull(currentType, nameof(currentType));
+        RequiredArgument.NotNull(assembly, nameof(assembly));
+        RequiredArgument.NotNull(currentNamespace, nameof(currentNamespace));
 
         Type type = methodInfo.DeclaringType;
 
@@ -141,9 +156,10 @@ internal static class MethodBaseExtensions
             {
                 return new MarkdownLink(text, methodInfo.GetMSDocsUrl());
             }
-            else if (type.Assembly == currentType.Assembly)
+
+            if (type.Assembly == assembly)
             {
-                return new MarkdownLink(text, methodInfo.GetInternalDocsUrl(noExtension, noPrefix));
+                return new MarkdownLink(text, methodInfo.GetInternalDocsUrl(currentNamespace, noExtension, noPrefix));
             }
 
             return new MarkdownText(text);

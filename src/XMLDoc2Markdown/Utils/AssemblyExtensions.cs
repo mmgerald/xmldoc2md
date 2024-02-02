@@ -16,9 +16,9 @@ internal static class AssemblyExtensions
         var namespaces = assembly.GetTypes()
             .Where(t => t.Namespace != null)
             .Select(t => t.Namespace)
-            .GroupBy(ns => ns).MaxBy(group => group.Count());
+            .GroupBy(ns => ns);
 
-        return namespaces?.Key;
+        return namespaces.First().Key;
     }
     
     internal static string GetSubNamespace(this Assembly assembly, string @namespace)

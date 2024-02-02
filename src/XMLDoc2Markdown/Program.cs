@@ -125,7 +125,7 @@ internal class Program
                     var fileName = type.GetDocsFileName();
                     Logger.Info($"  {fileName}.md");
 
-                    indexPage.AppendParagraph(type.GetDocsLink(type, noExtension: options.GitHubPages));
+                    indexPage.AppendParagraph(type.GetDocsLink(assembly, assembly.GetRootNamespace(), noExtension: options.GitHubPages));
 
                     try
                     {
