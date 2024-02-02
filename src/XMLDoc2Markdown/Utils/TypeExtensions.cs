@@ -218,6 +218,10 @@ internal static class TypeExtensions
     {
         RequiredArgument.NotNull(type, nameof(type));
         string t = fullNameSpace ? type.FullName : type.Name;
+        if (type.IsByRef)
+        {
+            t = t.Substring(0, t.Length - 1);
+        }
         t = Regex.Replace(t, @"\[.*\]", string.Empty).Replace('+', '.');
         return t.ToLower().Replace('`', '-');
     }
