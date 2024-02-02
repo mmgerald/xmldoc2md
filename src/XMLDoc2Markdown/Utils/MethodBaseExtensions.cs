@@ -123,10 +123,10 @@ internal static class MethodBaseExtensions
         return $"{url}#{anchor}";
     }
 
-    internal static MarkdownInlineElement GetDocsLink(this MethodBase methodInfo, Assembly assembly, string text = null, bool noExtension = false, bool noPrefix = false)
+    internal static MarkdownInlineElement GetDocsLink(this MethodBase methodInfo, Type currentType, string text = null, bool noExtension = false, bool noPrefix = false)
     {
         RequiredArgument.NotNull(methodInfo, nameof(methodInfo));
-        RequiredArgument.NotNull(assembly, nameof(assembly));
+        RequiredArgument.NotNull(currentType, nameof(currentType));
 
         Type type = methodInfo.DeclaringType;
 
@@ -141,7 +141,7 @@ internal static class MethodBaseExtensions
             {
                 return new MarkdownLink(text, methodInfo.GetMSDocsUrl());
             }
-            else if (type.Assembly == assembly)
+            else if (type.Assembly == currentType.Assembly)
             {
                 return new MarkdownLink(text, methodInfo.GetInternalDocsUrl(noExtension, noPrefix));
             }
