@@ -129,7 +129,7 @@ public class TypeDocumentation
             lines.Add($"Inheritance {string.Join(" → ", inheritanceHierarchy)}");
         }
 
-        Type[] interfaces = this.type.GetInterfaces();
+        Type[] interfaces = this.type.GetInterfaces().Where(i=> i.IsPublic).ToArray();
         if (interfaces.Length > 0)
         {
             IEnumerable<MarkdownInlineElement> implements = interfaces

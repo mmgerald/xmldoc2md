@@ -119,7 +119,7 @@ internal static class TypeExtensions
                 baseTypeAndInterfaces.Add(type.BaseType);
             }
 
-            baseTypeAndInterfaces.AddRange(type.GetInterfaces());
+            baseTypeAndInterfaces.AddRange(type.GetInterfaces().Where(x=> x.IsPublic));
 
             if (baseTypeAndInterfaces.Count > 0)
             {
