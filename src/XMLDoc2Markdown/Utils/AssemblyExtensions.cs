@@ -35,7 +35,21 @@ internal static class AssemblyExtensions
         return subNamespace.Substring(1);
     }
     
-    internal static string GetFolderName(this Assembly assembly, string @namespace)
+    internal static IEnumerable<string> GetSubNamespaceParts(this Assembly assembly, string @namespace)
+    {
+        RequiredArgument.NotNull(assembly, nameof(assembly));
+
+        var rootNamespace = assembly.GetRootNamespace();
+        var subNamespace = @namespace.Replace(rootNamespace, "");
+        if (string.IsNullOrWhiteSpace(subNamespace))
+        {
+            return new List<string>();
+        }
+
+        return subNamespace.Substring(1).Split(".");
+    }
+    
+    internal static string GetRelativeFolderPath(this Assembly assembly, string @namespace)
     {
         RequiredArgument.NotNull(assembly, nameof(assembly));
 

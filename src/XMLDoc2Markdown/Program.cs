@@ -95,22 +95,37 @@ internal class Program
 
             IEnumerable<Type> types = assembly.GetTypes().Where(type => type.IsPublic);
             IEnumerable<IGrouping<string, Type>> typesByNamespace = types.GroupBy(type => type.Namespace).OrderBy(g => g.Key);
-            int subNamespacePos = 1;
+            int subNamespacePos = 0;
             foreach (IGrouping<string, Type> namespaceTypes in typesByNamespace)
             {
                 indexPage.AppendHeader(namespaceTypes.Key, 2);
                 
                 var folderPath = @out;
-                var folderName = assembly.GetFolderName(namespaceTypes.Key);
-                if (!string.IsNullOrWhiteSpace(folderName))
+                var relativeFolderPath = assembly.GetSubNamespaceParts(namespaceTypes.Key).ToList();
+                if (relativeFolderPath.Any())
                 {
-                    folderPath = Path.Combine(@out, folderName);
-                    if (!Directory.Exists(folderPath))
+                    for (int index = 0; index < relativeFolderPath.Count; index++)
                     {
-                        Directory.CreateDirectory(folderPath);
-                            
+                        string directory = relativeFolderPath[index];
+                        folderPath = Path.Combine(folderPath, directory);
+                        if (!Directory.Exists(folderPath))
+                        {
+                            Directory.CreateDirectory(folderPath);
+                        }
+
+                        if (index == 0)
+                        {
+                            DocusaurusSerializer.Serialize(folderPath, new Category{ Label = directory, Position = subNamespacePos++});
+                        }
+                        else
+                        {
+                            DocusaurusSerializer.Serialize(folderPath, new Category{ Label = directory});
+                        }
                     }
-                    DocusaurusSerializer.Serialize(folderPath, new Category{ Label = assembly.GetSubNamespace(namespaceTypes.Key), Position = subNamespacePos++});
+                }
+                else
+                {
+                    DocusaurusSerializer.Serialize(folderPath, new Category{ Label = assembly.GetRootNamespace()});
                 }
 
                 foreach (Type type in namespaceTypes.OrderBy(x => x.Name))
@@ -122,7 +137,7 @@ internal class Program
                     }
 
                 
-                    var fileName = type.GetDocsFileName();
+                    var fileName = type.GetDocsFileName(false);
                     Logger.Info($"  {fileName}.md");
 
                     indexPage.AppendParagraph(type.GetDocsLink(assembly, assembly.GetRootNamespace(), noExtension: options.GitHubPages));

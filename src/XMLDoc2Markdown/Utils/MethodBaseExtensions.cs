@@ -97,7 +97,7 @@ internal static class MethodBaseExtensions
             throw new InvalidOperationException($"{type.FullName} is not a mscorlib type.");
         }
 
-        return $"{msdocsBaseUrl}/{type.GetDocsFileName()}.{methodInfo.Name.ToLower().Replace('`', '-')}";
+        return $"{msdocsBaseUrl}/{type.GetDocsFileName(true)}.{methodInfo.Name.ToLower().Replace('`', '-')}";
     }
 
     internal static string GetInternalDocsUrl(this MethodBase methodInfo, string currentNamespace, bool noExtension = false, bool noPrefix = false)
@@ -106,8 +106,8 @@ internal static class MethodBaseExtensions
 
         Type type = methodInfo.DeclaringType ?? throw new Exception($"Method {methodInfo.Name} has no declaring type.");
 
-        var referenceTypeFolder = type.Assembly.GetFolderName(type.Namespace);
-        var currentTypeFolder = type.Assembly.GetFolderName(currentNamespace);
+        var referenceTypeFolder = type.Assembly.GetRelativeFolderPath(type.Namespace);
+        var currentTypeFolder = type.Assembly.GetRelativeFolderPath(currentNamespace);
         string ret = "";
         if (referenceTypeFolder != currentTypeFolder)
         {
@@ -117,10 +117,13 @@ internal static class MethodBaseExtensions
                 ret += "../";
             }
 
-            ret += referenceTypeFolder + "/";
+            if (!string.IsNullOrWhiteSpace(referenceTypeFolder))
+            {
+                ret += referenceTypeFolder + "/";
+            }
         }
 
-        string url = $"{ret}{type.GetDocsFileName()}";
+        string url = $"{ret}{type.GetDocsFileName(false)}";
 
         if (!noExtension)
         {

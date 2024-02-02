@@ -158,7 +158,7 @@ internal static class TypeExtensions
         }
     }
 
-    internal static string GetMSDocsUrl(this Type type, string msdocsBaseUrl = "https://docs.microsoft.com/en-us/dotnet/api")
+    internal static string GetMSDocsUrl(this Type type, string msdocsBaseUrl = "https://learn.microsoft.com/en-us/dotnet/api")
     {
         if (type == null)
         {
@@ -170,7 +170,7 @@ internal static class TypeExtensions
             throw new InvalidOperationException($"{type.FullName} is not a mscorlib type.");
         }
 
-        return $"{msdocsBaseUrl}/{type.GetDocsFileName()}";
+        return $"{msdocsBaseUrl}/{type.GetDocsFileName(true)}";
     }
 
     internal static string GetInternalDocsUrl(this Type type, string currentNamespace,
@@ -181,8 +181,8 @@ internal static class TypeExtensions
             throw new ArgumentNullException(nameof(type));
         }
         
-        var referenceTypeFolder = type.Assembly.GetFolderName(type.Namespace);
-        var currentTypeFolder = type.Assembly.GetFolderName(currentNamespace);
+        var referenceTypeFolder = type.Assembly.GetRelativeFolderPath(type.Namespace);
+        var currentTypeFolder = type.Assembly.GetRelativeFolderPath(currentNamespace);
         string ret = "";
         if (referenceTypeFolder != currentTypeFolder)
         {
@@ -192,10 +192,13 @@ internal static class TypeExtensions
                 ret += "../";
             }
 
-            ret += referenceTypeFolder + "/";
+            if (!string.IsNullOrWhiteSpace(referenceTypeFolder))
+            {
+                ret += referenceTypeFolder + "/";
+            }
         }
 
-        string url = $"{ret}{type.GetDocsFileName()}";
+        string url = $"{ret}{type.GetDocsFileName(false)}";
 
         if (!noExtension)
         {
@@ -211,10 +214,10 @@ internal static class TypeExtensions
     }
 
 
-    internal static string GetDocsFileName(this Type type)
+    internal static string GetDocsFileName(this Type type, bool fullNameSpace)
     {
         RequiredArgument.NotNull(type, nameof(type));
-        string t = type.Name;
+        string t = fullNameSpace ? type.FullName : type.Name;
         t = Regex.Replace(t, @"\[.*\]", string.Empty).Replace('+', '.');
         return t.ToLower().Replace('`', '-');
     }
@@ -232,7 +235,7 @@ internal static class TypeExtensions
             text = type.GetDisplayName().FormatChevrons();
         }
 
-        if (!type.IsGenericTypeParameter)
+        if (!type.IsGenericTypeParameter && !type.IsGenericParameter)
         {
             if (type.IsGenericType)
             {

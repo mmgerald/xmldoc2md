@@ -110,7 +110,7 @@ internal static class MemberInfoExtensions
             throw new InvalidOperationException($"{type.FullName} is not a mscorlib type.");
         }
 
-        return $"{msdocsBaseUrl}/{type.GetDocsFileName()}.{memberInfo.Name.ToLower()}";
+        return $"{msdocsBaseUrl}/{type.GetDocsFileName(true)}.{memberInfo.Name.ToLower()}";
     }
 
     internal static string GetInternalDocsUrl(this MemberInfo memberInfo, string currentNamespace, bool noExtension = false, bool noPrefix = false)
@@ -120,8 +120,8 @@ internal static class MemberInfoExtensions
         Type type = memberInfo.DeclaringType ?? throw new Exception($"Event {memberInfo.Name} has no declaring type.");
 
         
-        var referenceTypeFolder = type.Assembly.GetFolderName(type.Namespace);
-        var currentTypeFolder = type.Assembly.GetFolderName(currentNamespace);
+        var referenceTypeFolder = type.Assembly.GetRelativeFolderPath(type.Namespace);
+        var currentTypeFolder = type.Assembly.GetRelativeFolderPath(currentNamespace);
         string ret = "";
         if (referenceTypeFolder != currentTypeFolder)
         {
@@ -131,10 +131,13 @@ internal static class MemberInfoExtensions
                 ret += "../";
             }
 
-            ret += referenceTypeFolder + "/";
+            if (!string.IsNullOrWhiteSpace(referenceTypeFolder))
+            {
+                ret += referenceTypeFolder + "/";
+            }
         }
 
-        string url = $"{ret}{type.GetDocsFileName()}";
+        string url = $"{ret}{type.GetDocsFileName(false)}";
 
         if (!noExtension)
         {
