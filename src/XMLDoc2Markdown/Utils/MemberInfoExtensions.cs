@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Markdown;
 
@@ -135,19 +136,19 @@ internal static class MemberInfoExtensions
         return $"{url}#{anchor}";
     }
 
-    internal static MarkdownInlineElement GetDocsLink(this MemberInfo memberInfo, Assembly assembly, string text = null, bool noExtension = false, bool noPrefix = false)
+    internal static MarkdownInlineElement GetDocsLink(this MemberInfo memberInfo, Type currentType, string text = null, bool noExtension = false, bool noPrefix = false)
     {
         RequiredArgument.NotNull(memberInfo, nameof(memberInfo));
-        RequiredArgument.NotNull(assembly, nameof(assembly));
+        RequiredArgument.NotNull(currentType, nameof(currentType));
 
         return memberInfo switch
         {
-            Type type => type.GetDocsLink(assembly, text, noExtension, noPrefix),
-            MethodBase method => method.GetDocsLink(assembly, text, noExtension, noPrefix),
-            _ => getDocsLinkBase(memberInfo, assembly, text, noExtension, noPrefix),
+            Type type => type.GetDocsLink(currentType, text, noExtension, noPrefix),
+            MethodBase method => method.GetDocsLink(currentType, text, noExtension, noPrefix),
+            _ => getDocsLinkBase(memberInfo, currentType, text, noExtension, noPrefix),
         };
 
-        static MarkdownInlineElement getDocsLinkBase(MemberInfo memberInfo, Assembly assembly, string text = null, bool noExtension = false, bool noPrefix = false)
+        static MarkdownInlineElement getDocsLinkBase(MemberInfo memberInfo, Type currentType, string text = null, bool noExtension = false, bool noPrefix = false)
         {
             Type declaringType = memberInfo.DeclaringType;
 
@@ -163,7 +164,7 @@ internal static class MemberInfoExtensions
                     return new MarkdownLink(text, memberInfo.GetMSDocsUrl());
                 }
 
-                if (declaringType.Assembly == assembly)
+                if (declaringType.Assembly == currentType.Assembly)
                 {
                     return new MarkdownLink(text, memberInfo.GetInternalDocsUrl(noExtension, noPrefix));
                 }
@@ -236,5 +237,10 @@ internal static class MemberInfoExtensions
         }
 
         return name;
+    }
+
+    internal static bool IsCompilerGenerated(this MemberInfo memberInfo)
+    {
+        return memberInfo.GetCustomAttributes<CompilerGeneratedAttribute>().Any();
     }
 }

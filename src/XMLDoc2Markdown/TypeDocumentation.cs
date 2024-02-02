@@ -35,6 +35,10 @@ public class TypeDocumentation
 
     public override string ToString()
     {
+        this.document.AppendHorizontalRule();
+        this.document.AppendParagraph($"title: {this.type.GetDisplayName()}");
+        this.document.AppendHorizontalRule();
+        
         if (this.options.BackButton)
         {
             this.WriteBackButton(top: true);
@@ -120,7 +124,7 @@ public class TypeDocumentation
             IEnumerable<MarkdownInlineElement> inheritanceHierarchy = this.type.GetInheritanceHierarchy()
                 .Reverse()
                 .Select(t => t.GetDocsLink(
-                    this.assembly,
+                    this.type,
                     noExtension: this.options.GitHubPages || this.options.GitlabWiki,
                     noPrefix: this.options.GitlabWiki));
             lines.Add($"Inheritance {string.Join(" → ", inheritanceHierarchy)}");
@@ -131,7 +135,7 @@ public class TypeDocumentation
         {
             IEnumerable<MarkdownInlineElement> implements = interfaces
                 .Select(i => i.GetDocsLink(
-                    this.assembly,
+                    this.type,
                     noExtension: this.options.GitHubPages || this.options.GitlabWiki,
                     noPrefix: this.options.GitlabWiki));
             lines.Add($"Implements {string.Join(", ", implements)}");
@@ -326,7 +330,7 @@ public class TypeDocumentation
     {
         RequiredArgument.NotNull(members, nameof(members));
 
-        members = members.Where(member => member != null);
+        members = members.Where(member => member != null && !member.IsCompilerGenerated());
 
         if (!members.Any())
         {
@@ -348,7 +352,7 @@ public class TypeDocumentation
 
         foreach (MemberInfo member in members)
         {
-            this.document.AppendHeader(new MarkdownStrongEmphasis(member.GetSignature(true).FormatChevrons()), 3);
+            this.document.AppendHeader(new MarkdownStrongEmphasis(member.GetSignature().FormatChevrons()), 3);
 
             XElement memberDocElement = this.documentation.GetMember(member);
 
@@ -373,7 +377,7 @@ public class TypeDocumentation
 
                 MarkdownInlineElement typeName = propertyInfo.GetReturnType()?
                     .GetDocsLink(
-                        this.assembly,
+                        this.type,
                         noExtension: this.options.GitHubPages || this.options.GitlabWiki,
                         noPrefix: this.options.GitlabWiki);
                 IEnumerable<XNode> nodes = memberDocElement?.Element("value")?.Nodes();
@@ -428,7 +432,7 @@ public class TypeDocumentation
         this.document.AppendHeader("Returns", 4);
 
         MarkdownInlineElement typeName = methodInfo.ReturnType.GetDocsLink(
-            this.assembly,
+            this.type,
             noExtension: this.options.GitHubPages || this.options.GitlabWiki,
             noPrefix: this.options.GitlabWiki);
         IEnumerable<XNode> nodes = memberDocElement?.Element("returns")?.Nodes();
@@ -458,7 +462,7 @@ public class TypeDocumentation
         foreach (Type typeParam in typeParams)
         {
             MarkdownInlineElement typeName = typeParam.GetDocsLink(
-                this.assembly,
+                this.type,
                 noExtension: this.options.GitHubPages || this.options.GitlabWiki,
                 noPrefix: this.options.GitlabWiki);
             IEnumerable<XNode> nodes = memberDocElement?.Elements("typeparam").FirstOrDefault(e => e.Attribute("name")?.Value == typeParam.Name)?.Nodes();
@@ -484,7 +488,7 @@ public class TypeDocumentation
         foreach (ParameterInfo param in @params)
         {
             MarkdownInlineElement typeName = param.ParameterType.GetDocsLink(
-                this.assembly,
+                this.type,
                 noExtension: this.options.GitHubPages || this.options.GitlabWiki,
                 noPrefix: this.options.GitlabWiki);
             IEnumerable<XNode> nodes = memberDocElement?.Elements("param").FirstOrDefault(e => e.Attribute("name")?.Value == param.Name)?.Nodes();
@@ -578,7 +582,7 @@ public class TypeDocumentation
         if (this.TryGetMemberInfoFromReference(crefAttribute, out MemberInfo memberInfo))
         {
             return memberInfo.GetDocsLink(
-                this.assembly,
+                this.type,
                 text: text,
                 noExtension: this.options.GitHubPages || this.options.GitlabWiki,
                 noPrefix: this.options.GitlabWiki);

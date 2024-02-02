@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.JavaScript;
+using System.Text.RegularExpressions;
 using Markdown;
 
 namespace XMLDoc2Markdown.Utils;
@@ -9,29 +11,29 @@ namespace XMLDoc2Markdown.Utils;
 internal static class TypeExtensions
 {
     internal static readonly IReadOnlyDictionary<Type, string> simplifiedTypeNames = new Dictionary<Type, string>
-        {
-            // void
-            { typeof(void), "void" },
-            // object
-            { typeof(object), "object" },
-            // boolean
-            { typeof(bool), "bool" },
-            // numeric
-            { typeof(sbyte), "sbyte" },
-            { typeof(byte), "byte" },
-            { typeof(short), "short" },
-            { typeof(ushort), "ushort" },
-            { typeof(int), "int" },
-            { typeof(uint), "uint" },
-            { typeof(long), "long" },
-            { typeof(ulong), "ulong" },
-            { typeof(float), "float" },
-            { typeof(double), "double" },
-            { typeof(decimal), "decimal" },
-            // text
-            { typeof(char), "char" },
-            { typeof(string), "string" },
-        };
+    {
+        // void
+        { typeof(void), "void" },
+        // object
+        { typeof(object), "object" },
+        // boolean
+        { typeof(bool), "bool" },
+        // numeric
+        { typeof(sbyte), "sbyte" },
+        { typeof(byte), "byte" },
+        { typeof(short), "short" },
+        { typeof(ushort), "ushort" },
+        { typeof(int), "int" },
+        { typeof(uint), "uint" },
+        { typeof(long), "long" },
+        { typeof(ulong), "ulong" },
+        { typeof(float), "float" },
+        { typeof(double), "double" },
+        { typeof(decimal), "decimal" },
+        // text
+        { typeof(char), "char" },
+        { typeof(string), "string" },
+    };
 
     internal static string GetSimplifiedName(this Type type)
     {
@@ -50,6 +52,17 @@ internal static class TypeExtensions
         }
     }
 
+    public static bool IsRecordType(this Type type)
+    {
+        // Check if the type is a class since records are class types
+        if (!type.IsClass)
+            return false;
+
+        // Look for the EqualityContract property, which is unique to records
+        PropertyInfo equalityContractProperty = type.GetProperty("EqualityContract", BindingFlags.NonPublic | BindingFlags.Instance);
+        return equalityContractProperty != null;
+    }
+
     internal static string GetSignature(this Type type, bool full = false)
     {
         List<string> signature = new();
@@ -60,20 +73,26 @@ internal static class TypeExtensions
 
             if (type.IsClass)
             {
-                if (type.IsAbstract && type.IsSealed)
+                switch (type.IsAbstract)
                 {
-                    signature.Add("static");
-                }
-                else if (type.IsAbstract)
-                {
-                    signature.Add("abstract");
-                }
-                else if (type.IsSealed)
-                {
-                    signature.Add("sealed");
+                    case true when type.IsSealed:
+                        signature.Add("static");
+                        break;
+                    case true:
+                        signature.Add("abstract");
+                        break;
+                    default:
+                    {
+                        if (type.IsSealed && !type.IsRecordType())
+                        {
+                            signature.Add("sealed");
+                        }
+
+                        break;
+                    }
                 }
 
-                signature.Add("class");
+                signature.Add(type.IsRecordType() ? "record" : "class");
             }
             else if (type.IsInterface)
             {
@@ -104,7 +123,7 @@ internal static class TypeExtensions
 
             if (baseTypeAndInterfaces.Count > 0)
             {
-                signature.Add($": {string.Join(", ", baseTypeAndInterfaces.Select(t => t.Namespace != type.Namespace ? t.FullName : t.Name))}");
+                signature.Add($": {string.Join(", ", baseTypeAndInterfaces.Select(t => t.GetDisplayName()))}");
             }
         }
 
@@ -145,6 +164,7 @@ internal static class TypeExtensions
         {
             throw new ArgumentNullException(nameof(type));
         }
+
         if (type.Assembly != typeof(string).Assembly)
         {
             throw new InvalidOperationException($"{type.FullName} is not a mscorlib type.");
@@ -153,14 +173,29 @@ internal static class TypeExtensions
         return $"{msdocsBaseUrl}/{type.GetDocsFileName()}";
     }
 
-    internal static string GetInternalDocsUrl(this Type type, bool noExtension = false, bool noPrefix = false)
+    internal static string GetInternalDocsUrl(this Type type, Type currentType,
+        bool noExtension = false, bool noPrefix = false)
     {
         if (type == null)
         {
             throw new ArgumentNullException(nameof(type));
         }
+        
+        var referenceTypeFolder = type.Assembly.GetFolderName(type.Namespace);
+        var currentTypeFolder = type.Assembly.GetFolderName(currentType.Namespace);
+        string ret = "";
+        if (referenceTypeFolder != currentTypeFolder)
+        {
+            var y = currentTypeFolder?.Split("/").Length ?? 0;
+            for (int i = 0; i < y; i++)
+            {
+                ret += "../";
+            }
 
-        string url = $"{type.GetDocsFileName()}";
+            ret += referenceTypeFolder;
+        }
+
+        string url = $"{ret}{type.GetDocsFileName()}";
 
         if (!noExtension)
         {
@@ -175,15 +210,18 @@ internal static class TypeExtensions
         return url;
     }
 
+
     internal static string GetDocsFileName(this Type type)
     {
         RequiredArgument.NotNull(type, nameof(type));
-        return type.GetIdentifier().ToLower().Replace('`', '-');
+        string t = type.Name;
+        t = Regex.Replace(t, @"\[.*\]", string.Empty).Replace('+', '.');
+        return t.ToLower().Replace('`', '-');
     }
 
     internal static MarkdownInlineElement GetDocsLink(
         this Type type,
-        Assembly assembly,
+        Type currentType,
         string text = null,
         bool noExtension = false,
         bool noPrefix = false)
@@ -193,15 +231,21 @@ internal static class TypeExtensions
             text = type.GetDisplayName().FormatChevrons();
         }
 
-        if (!string.IsNullOrEmpty(type.FullName)) // Generic type does not have full name
+        if (!type.IsGenericTypeParameter)
         {
+            if (type.IsGenericType)
+            {
+                type = type.GetGenericTypeDefinition();
+            }
+
             if (type.Assembly == typeof(string).Assembly)
             {
                 return new MarkdownLink(text, type.GetMSDocsUrl());
             }
-            else if (type.Assembly == assembly)
+
+            if (type.Assembly == currentType.Assembly)
             {
-                return new MarkdownLink(text, type.GetInternalDocsUrl(noExtension, noPrefix));
+                return new MarkdownLink(text, type.GetInternalDocsUrl(currentType, noExtension, noPrefix));
             }
         }
 

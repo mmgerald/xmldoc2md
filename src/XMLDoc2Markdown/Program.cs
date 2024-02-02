@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Markdown;
 using Microsoft.Extensions.CommandLineUtils;
+using XMLDoc2Markdown.Docusaurus;
 using XMLDoc2Markdown.Utils;
 
 namespace XMLDoc2Markdown;
@@ -94,9 +95,23 @@ internal class Program
 
             IEnumerable<Type> types = assembly.GetTypes().Where(type => type.IsPublic);
             IEnumerable<IGrouping<string, Type>> typesByNamespace = types.GroupBy(type => type.Namespace).OrderBy(g => g.Key);
+            int subNamespacePos = 1;
             foreach (IGrouping<string, Type> namespaceTypes in typesByNamespace)
             {
                 indexPage.AppendHeader(namespaceTypes.Key, 2);
+                
+                var folderPath = @out;
+                var folderName = assembly.GetFolderName(namespaceTypes.Key);
+                if (!string.IsNullOrWhiteSpace(folderName))
+                {
+                    folderPath = Path.Combine(@out, folderName);
+                    if (!Directory.Exists(folderPath))
+                    {
+                        Directory.CreateDirectory(folderPath);
+                            
+                    }
+                    DocusaurusSerializer.Serialize(folderPath, new Category{ Label = assembly.GetSubNamespace(namespaceTypes.Key), Position = subNamespacePos++});
+                }
 
                 foreach (Type type in namespaceTypes.OrderBy(x => x.Name))
                 {
@@ -106,15 +121,16 @@ internal class Program
                         continue;
                     }
 
-                    string fileName = type.GetDocsFileName();
+                
+                    var fileName = type.GetDocsFileName();
                     Logger.Info($"  {fileName}.md");
 
-                    indexPage.AppendParagraph(type.GetDocsLink(assembly, noExtension: options.GitHubPages));
+                    indexPage.AppendParagraph(type.GetDocsLink(type, noExtension: options.GitHubPages));
 
                     try
                     {
                         File.WriteAllText(
-                            Path.Combine(@out, $"{fileName}.md"),
+                            Path.Combine(folderPath, $"{fileName}.md"),
                             new TypeDocumentation(assembly, type, documentation, options).ToString()
                         );
                         succeeded++;

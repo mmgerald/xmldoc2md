@@ -1,10 +1,12 @@
+using System.Reflection;
+
 namespace XMLDoc2Markdown.Utils;
 
 internal static class StringExtensions
 {
     internal static string FormatChevrons(this string value)
     {
-        return value.Replace("<", "{").Replace(">", "}");
+        return value.Replace("<", "\\<").Replace(">", "\\>");
     }
 
     internal static string ToAnchorLink(this string value)
@@ -20,4 +22,6 @@ internal static class StringExtensions
             .Replace(' ', '-')
             .ToLower();
     }
+    
+
 }
