@@ -213,7 +213,25 @@ internal static class TypeExtensions
         return url;
     }
 
+    internal static bool IsGenericParameter(this Type type)
+    {
+        if (type.IsGenericTypeParameter || type.IsGenericParameter)
+        {
+            return true;
+        }
 
+        if (type.IsArray)
+        {
+            var elementType = type.GetElementType();
+            if (elementType != null)
+            {
+                return elementType.IsGenericTypeParameter || elementType.IsGenericParameter;
+            }
+        }
+
+        return false;
+    }
+    
     internal static string GetDocsFileName(this Type type, bool fullNameSpace)
     {
         RequiredArgument.NotNull(type, nameof(type));
@@ -239,7 +257,7 @@ internal static class TypeExtensions
             text = type.GetDisplayName().FormatChevrons();
         }
 
-        if (!type.IsGenericTypeParameter && !type.IsGenericParameter)
+        if (!type.IsGenericParameter())
         {
             if (type.IsGenericType)
             {
