@@ -91,8 +91,9 @@ internal class Program
             XmlDocumentation documentation = new(src);
             Logger.Info($"Generation started: Assembly: {assemblyName}");
 
-            IMarkdownDocument indexPage = new MarkdownDocument().AppendHeader(assemblyName, 1);
-
+            IMarkdownDocument indexPage = new MarkdownDocument().AppendParagraph("");
+            indexPage.AppendHeader(assemblyName, 1);
+            
             IEnumerable<Type> types = assembly.GetTypes().Where(type => type.IsPublic);
             IEnumerable<IGrouping<string, Type>> typesByNamespace = types.GroupBy(type => type.Namespace).OrderBy(g => g.Key);
             int subNamespacePos = 0;
