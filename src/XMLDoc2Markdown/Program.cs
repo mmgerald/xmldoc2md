@@ -131,13 +131,6 @@ internal class Program
 
                 foreach (Type type in namespaceTypes.OrderBy(x => x.Name))
                 {
-                    // exclude delegates
-                    if (typeof(Delegate).IsAssignableFrom(type))
-                    {
-                        continue;
-                    }
-
-                
                     var fileName = type.GetDocsFileName(false);
                     Logger.Info($"  {fileName}.md");
 
