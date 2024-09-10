@@ -32,7 +32,7 @@ internal static class AssemblyExtensions
             return null;
         }
 
-        return subNamespace.TrimStart('.');
+        return subNamespace.Substring(0);
     }
     
     internal static IEnumerable<string> GetSubNamespaceParts(this Assembly assembly, string @namespace)
@@ -46,7 +46,7 @@ internal static class AssemblyExtensions
             return new List<string>();
         }
 
-        return subNamespace.Split(".");
+        return subNamespace.Substring(0).Split(".");
     }
     
     internal static string GetRelativeFolderPath(this Assembly assembly, string @namespace)
