@@ -73,7 +73,7 @@ internal class AssemblyLoadContext : System.Runtime.Loader.AssemblyLoadContext
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            return Environment.ExpandEnvironmentVariables(@"C:\Program Files\dotnet");
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),"dotnet");
         }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || 
