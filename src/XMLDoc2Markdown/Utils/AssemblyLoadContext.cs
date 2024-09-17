@@ -22,12 +22,12 @@ internal class AssemblyLoadContext : System.Runtime.Loader.AssemblyLoadContext
 
     private Assembly OnResolving(System.Runtime.Loader.AssemblyLoadContext context, AssemblyName name)
     {
-            string[] possiblePaths =
-            [
+            string[] possiblePaths = new[]
+            {
                 Path.GetDirectoryName(this._pluginPath),
-                PathHelpers.GetAspNetCoreSharedPath(),
+                @"C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.8",
                 AppDomain.CurrentDomain.BaseDirectory
-            ];
+            };
 
             foreach (string searchPath in possiblePaths)
             {
