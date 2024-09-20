@@ -79,9 +79,9 @@ internal class Program
             int succeeded = 0;
             int failed = 0;
 
-            if (!Directory.Exists(@out.ToLower()))
+            if (!Directory.Exists(@out))
             {
-                Directory.CreateDirectory(@out.ToLower());
+                Directory.CreateDirectory(@out);
             }
 
             Assembly assembly = new AssemblyLoadContext(src)
@@ -107,7 +107,7 @@ internal class Program
                     for (int index = 0; index < relativeFolderPath.Count; index++)
                     {
                         string directory = relativeFolderPath[index];
-                        folderPath = Path.Combine(folderPath, directory).ToLower();
+                        folderPath = Path.Combine(folderPath, directory.ToLower());
                         if (!Directory.Exists(folderPath))
                         {
                             Directory.CreateDirectory(folderPath);
