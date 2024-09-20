@@ -79,9 +79,9 @@ internal class Program
             int succeeded = 0;
             int failed = 0;
 
-            if (!Directory.Exists(@out))
+            if (!Directory.Exists(@out.ToLower()))
             {
-                Directory.CreateDirectory(@out);
+                Directory.CreateDirectory(@out.ToLower());
             }
 
             Assembly assembly = new AssemblyLoadContext(src)
@@ -107,7 +107,7 @@ internal class Program
                     for (int index = 0; index < relativeFolderPath.Count; index++)
                     {
                         string directory = relativeFolderPath[index];
-                        folderPath = Path.Combine(folderPath, directory);
+                        folderPath = Path.Combine(folderPath, directory).ToLower();
                         if (!Directory.Exists(folderPath))
                         {
                             Directory.CreateDirectory(folderPath);
@@ -130,13 +130,6 @@ internal class Program
 
                 foreach (Type type in namespaceTypes.OrderBy(x => x.Name))
                 {
-                    // exclude delegates
-                    if (typeof(Delegate).IsAssignableFrom(type))
-                    {
-                        continue;
-                    }
-
-                
                     var fileName = type.GetDocsFileName(false);
                     Logger.Info($"  {fileName}.md");
 
