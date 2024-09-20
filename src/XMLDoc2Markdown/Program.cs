@@ -115,9 +115,9 @@ internal class Program
 
                         if (index == 0)
                         {
-                            DocusaurusSerializer.Serialize(folderPath, new Category{ Label = directory, Position = subNamespacePos++});
+                            DocusaurusSerializer.Serialize(folderPath, new Category{ Label = string.IsNullOrWhiteSpace(directory) ? null : directory, Position = subNamespacePos++});
                         }
-                        else
+                        else if (!string.IsNullOrWhiteSpace(directory))
                         {
                             DocusaurusSerializer.Serialize(folderPath, new Category{ Label = directory});
                         }
