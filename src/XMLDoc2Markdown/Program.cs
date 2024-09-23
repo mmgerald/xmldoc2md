@@ -20,55 +20,6 @@ internal class Program
         {
             Name = "xmldoc2md"
         };
-        
-        // var deps = DependencyContext.Default;
-        // var libraries = deps.CompileLibraries;
-        //
-        // foreach (var library in libraries)
-        // {
-        //     if (library.Name.Contains("Microsoft."))
-        //     {
-        //         Console.WriteLine($"Library: {library.Name}");
-        //         Console.WriteLine($"  Type: {library.Type}");
-        //         Console.WriteLine($"  Version: {library.Version}");
-        //
-        //         // Print assembly names
-        //         Console.WriteLine("  Assemblies:");
-        //         foreach (var assembly in library.Assemblies)
-        //         {
-        //             Console.WriteLine($"    {assembly}");
-        //         }
-        //
-        //         // Try to resolve reference paths
-        //         var paths = library.ResolveReferencePaths();
-        //         if (paths.Any())
-        //         {
-        //             Console.WriteLine("  Reference Paths:");
-        //             foreach (var path in paths)
-        //             {
-        //                 Console.WriteLine($"    {path}");
-        //             }
-        //         }
-        //         // Print dependencies
-        //         if (library.Dependencies.Any())
-        //         {
-        //             Console.WriteLine("  Dependencies:");
-        //             foreach (var dependency in library.Dependencies)
-        //             {
-        //                 Console.WriteLine($"    {dependency.Name} ({dependency.Version})");
-        //             }
-        //         }
-        //
-        //         Console.WriteLine(); // Empty line for readability
-        //     }
-        // }
-        //
-        // var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-        // foreach (var assembly in loadedAssemblies)
-        // {
-        //     Console.WriteLine($"Assembly: {assembly.FullName}");
-        //     Console.WriteLine($"Location: {assembly.Location}");
-        // }
 
         app.VersionOption("-v|--version", () =>
         {
