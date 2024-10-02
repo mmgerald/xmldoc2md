@@ -5,8 +5,10 @@ using System.Linq;
 using System.Reflection;
 using Markdown;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.DependencyModel;
 using XMLDoc2Markdown.Docusaurus;
 using XMLDoc2Markdown.Utils;
+
 
 namespace XMLDoc2Markdown;
 
@@ -84,15 +86,19 @@ internal class Program
                 Directory.CreateDirectory(@out);
             }
 
-            Assembly assembly = new AssemblyLoadContext(src)
+
+            var x = new AssemblyLoadContext(src, true); 
+            
+             Assembly assembly = x
                 .LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(src)));
 
             string assemblyName = assembly.GetName().Name;
             XmlDocumentation documentation = new(src);
             Logger.Info($"Generation started: Assembly: {assemblyName}");
 
-            IMarkdownDocument indexPage = new MarkdownDocument().AppendHeader(assemblyName, 1);
-
+            IMarkdownDocument indexPage = new MarkdownDocument().AppendParagraph("");
+            indexPage.AppendHeader(assemblyName, 1);
+            
             IEnumerable<Type> types = assembly.GetTypes().Where(type => type.IsPublic);
             IEnumerable<IGrouping<string, Type>> typesByNamespace = types.GroupBy(type => type.Namespace).OrderBy(g => g.Key);
             int subNamespacePos = 0;

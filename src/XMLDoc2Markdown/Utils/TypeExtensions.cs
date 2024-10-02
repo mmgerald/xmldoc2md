@@ -186,7 +186,7 @@ internal static class TypeExtensions
         string ret = "";
         if (referenceTypeFolder != currentTypeFolder)
         {
-            var y = currentTypeFolder?.Split("/").Length ?? 0;
+            var y = currentTypeFolder?.Split("/").Where(x => !string.IsNullOrWhiteSpace(x)).ToArray().Length ?? 0;
             for (int i = 0; i < y; i++)
             {
                 ret += "../";
