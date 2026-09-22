@@ -47,7 +47,9 @@ public class TypeDocumentation
 
         this.document.AppendHeader(this.type.GetDisplayName().FormatChevrons(), 1);
 
-        this.document.AppendParagraph($"Namespace: {this.type.Namespace}");
+        this.document.AppendParagraph(string.IsNullOrEmpty(this.type.Namespace)
+            ? $"Namespace: {Program.GlobalNamespaceLabel}"
+            : $"Namespace: {this.type.Namespace}");
 
         XElement typeDocElement = this.documentation.GetMember(this.type);
 

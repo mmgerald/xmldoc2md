@@ -46,7 +46,11 @@ internal static class MemberInfoExtensions
         switch (memberInfo)
         {
             case Type type:
-                string t  = type.Namespace + "." + type.Name;
+                // A type in the global namespace is identified by its bare name in the XML
+                // documentation file (e.g. "T:Program"), so it must not get a leading dot.
+                string t = string.IsNullOrEmpty(type.Namespace)
+                    ? type.Name
+                    : type.Namespace + "." + type.Name;
                 return Regex.Replace(t, @"\[.*\]", string.Empty).Replace('+', '.');
 
             case PropertyInfo _:
@@ -262,7 +266,7 @@ internal static class MemberInfoExtensions
                 isMethodParameter,
                 typeGenericMap,
                 methodGenericMap) + "."
-            : type.Namespace + ".";
+            : string.IsNullOrEmpty(type.Namespace) ? string.Empty : type.Namespace + ".";
 
         name += isMethodParameter
             ? Regex.Replace(type.Name, @"`\d+", string.Empty)

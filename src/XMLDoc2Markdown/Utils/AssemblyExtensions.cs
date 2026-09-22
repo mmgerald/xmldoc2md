@@ -20,6 +20,12 @@ internal static class AssemblyExtensions
     {
         RequiredArgument.NotNull(assembly, nameof(assembly));
 
+        // Types in the global namespace have no namespace at all - they live in the output root.
+        if (string.IsNullOrWhiteSpace(@namespace))
+        {
+            return null;
+        }
+
         var rootNamespace = assembly.GetAssemblyName();
         var subNamespace = @namespace.Replace(rootNamespace, "");
         if (string.IsNullOrWhiteSpace(subNamespace))

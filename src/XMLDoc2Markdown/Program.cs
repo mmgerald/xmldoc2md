@@ -14,6 +14,11 @@ namespace XMLDoc2Markdown;
 
 internal class Program
 {
+    /// <summary>
+    /// Heading used for types that are declared in the global namespace.
+    /// </summary>
+    internal const string GlobalNamespaceLabel = "<global namespace>";
+
     private static int Main(string[] args)
     {
         CommandLineApplication app = new() { Name = "xmldoc2md" };
@@ -99,17 +104,23 @@ internal class Program
             indexPage.AppendHeader(assemblyName, 1);
 
             IEnumerable<Type> types = assembly.GetTypes().Where(type => type.IsPublic);
+            // Types declared in the global namespace report a null Namespace. Since .NET 10 this
+            // includes the public partial Program class Roslyn generates for top-level statement
+            // apps, so every executable hits this path. Group them under an empty key and write
+            // their pages into the output root instead of a namespace sub folder.
             IEnumerable<IGrouping<string, Type>> typesByNamespace =
-                types.GroupBy(type => type.Namespace).OrderBy(g => g.Key);
+                types.GroupBy(type => type.Namespace ?? string.Empty).OrderBy(g => g.Key);
             int subNamespacePos = 0;
-            
-            
+
+
             foreach (IGrouping<string, Type> namespaceTypes in typesByNamespace)
             {
-                indexPage.AppendHeader(namespaceTypes.Key, 2);
+                var namespaceName = namespaceTypes.Key;
+                indexPage.AppendHeader(
+                    string.IsNullOrWhiteSpace(namespaceName) ? GlobalNamespaceLabel : namespaceName, 2);
 
                 var folderPath = @out;
-                var relativeFolderPath = namespaceTypes.Key;
+                var relativeFolderPath = namespaceName;
                 if (relativeFolderPath.StartsWith(assemblyName))
                 {
                     relativeFolderPath = relativeFolderPath.Replace(assemblyName, "");
@@ -130,7 +141,7 @@ internal class Program
                     }
 
                     DocusaurusSerializer.Serialize(folderPath,
-                        new Category { Label = namespaceTypes.Key.Replace(assemblyName + ".", ""), Position = subNamespacePos++ });
+                        new Category { Label = namespaceName.Replace(assemblyName + ".", ""), Position = subNamespacePos++ });
                 }
 
                 foreach (Type type in namespaceTypes.OrderBy(x => x.Name))
